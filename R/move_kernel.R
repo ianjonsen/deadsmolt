@@ -25,7 +25,7 @@ move_kernel <- function(data, xy = NULL, mpar, i, s, ts, d2l, dir2l) {
 
 
                  ## state 2: smolt outside of preferred T range
-                 ## NEED TO REVISIT THIS - smolts should slow down/reverse when < ts.min,
+                 ## smolts should slow down/reverse when < ts.min,
                  ##   speed up when > ts.max to 'catch up' to preferred water mass
                  if (ts < mpar$pars$tsr[1]) {
                    ## slow down & head southward (presumably to warmer water mass)
