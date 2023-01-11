@@ -7,10 +7,7 @@
 #' @importFrom raster extract xyFromCell
 #' @export
 #'
-moveSmir <- function(data, xy = NULL, mpar, i, s, ts, w, d2l, dir2l) {
-
-    phi <- NULL
-    ## regular movement
+move_kernel <- function(data, xy = NULL, mpar, i, s, ts, d2l, dir2l) {
 
     if (d2l > mpar$pars$buffer) {
       switch(mpar$scenario,
@@ -24,12 +21,13 @@ moveSmir <- function(data, xy = NULL, mpar, i, s, ts, w, d2l, dir2l) {
                  ## state 2: stop migration and remain in current water mass
                  ## NEED TO REVISIT THIS - smolts should slow down/reverse when < ts.min,
                  ##   speed up when > ts.max to 'catch up' to preferred water mass
-                 if (any(ts < mpar$pars$ts.min, ts > mpar$pars$ts.max)) s <- 0
+                 if (ts < mpar$pars$tsr[1]) s <- s * 1
+                 if (ts > mpar$pars$tsr[2]) s <- s * 1.5
              })
     } else {
         if(d2l > 2) {
           if(xy[2] < 1475) {
-            ## direct kelt to move directly toward CoA (N end of SoBI) if in 
+            ## direct kelt to move directly toward CoA (N end of SoBI) if in
             ##  Miramichi Bay or outside of Bay but further South, _OR_ if in SoBI
             phi <- atan2(mpar$pars$coa[1] - xy[1], mpar$pars$coa[2] - xy[2])
           } else {

@@ -1,6 +1,6 @@
-Package: deadmolt
+Package: deadsmolt
 Type: Package
-Title: simulate Mirimichi River Atlantic salmon smolt migration & dead tag detections in the GSL
+Title: simulate Miramichi River Atlantic salmon smolt migration & dead tag detections in the GSL
 Version: 0.1-1
 Date: 2023-01-10
 Author: Ian Jonsen

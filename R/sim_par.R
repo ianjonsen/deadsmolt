@@ -57,8 +57,7 @@ sim_par <-
       mdir = c(75,-45)/180*pi, # bias direction for N migration (S migration is mdir - pi)
       NFline.x = runif(1, 7700, 7900), # location on x-axis at which smolt turns N to Lab Shelf
       NFline.y = runif(1, 1950, 2125),
-      ts.min = 4, # C from Daniels et al. ASF sim modelling
-      ts.max = 10, 
+      tsr = c(4, 10), # C from Daniels et al. ASF sim modelling
       pN = 0.75,
       rho = c(0.6, 0.4), # directional persistence for brw [1] and rw [2]
       r = -0.001, # strength of attraction to coa
@@ -70,7 +69,8 @@ sim_par <-
       buffer = 5,
       b = 2,
       a = 0,
-      w0 = 30,
+      fl0 = 0.146,
+      g = 0.006, # growth in forklength as % per day (re-scaled to hourly in simulation)
       surv = 0.9936, ## daily survival rate
       reten = 0.845^(1/60), ## daily V7/8 tag retention rate (in first ~ 60 d - Brundson et al 2019 ICES JMarSci 76:7)
       Dreten = 60, ## number of days within which tags can be expulsed
