@@ -20,9 +20,9 @@ sim_setup <-
     if(is.null(prj)) prj <- "+proj=stere +lat_0=90 +lon_0=-100 +k=0.933012425899506 +x_0=4245000 +y_0=5295000 +R=6371229 +units=km +no_defs"
 
     out <- list(
-      bathy = suppressWarnings(raster(bathy)),
-      land = suppressWarnings(raster(d2land)),
-      land_dir = suppressWarnings(raster(land_dir))
+      land = suppressWarnings(raster(land)),
+      d2land = suppressWarnings(raster(d2land)),
+      dir2land = suppressWarnings(raster(dir2land))
     )
 
     out[["u"]] <- suppressWarnings(stack(file.path(riops, "riops_doy_u.grd")))

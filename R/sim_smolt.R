@@ -99,8 +99,8 @@ sim_smolt <-
       }
 
       ## calculate distance & direction to land
-      d2l[i-1] <- extract(data$land, rbind(xy[i-1, ]))
-      dir2l[i-1] <- extract(data$land_dir, rbind(xy[i-1, ]))
+      d2l[i-1] <- extract(data$d2land, rbind(xy[i-1, ]))
+      dir2l[i-1] <- extract(data$dir2land, rbind(xy[i-1, ]))
 
       ## Movement kernel
       ds[i,] <- move_kernel(data,
@@ -139,8 +139,7 @@ sim_smolt <-
       ## overwrite s[i] if set to 0 (outside of preferred temp range) in movement kernel
       s[i] <- ds[i,3]
 
-      if((extract(data$land, rbind(xy[i, ])) == 0 |
-          is.na(extract(data$land, rbind(xy[i, ]))))  & any(!is.na(xy[i,]))) {
+      if((extract(data$land, rbind(xy[i, ])) == 1)  & any(!is.na(xy[i,]))) {
         mpar$land <- TRUE
         cat("\n stopping simulation: stuck on land")
         break
