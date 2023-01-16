@@ -9,6 +9,8 @@ sim_setup(config = config, deadsmolt = FALSE, esrf = TRUE)
 \arguments{
 \item{config}{- path to config.R script containing file.paths for required & optional environmental layers (see Details)}
 
+\item{deadsmolt}{- logical; turns on Miramichi & SoBI receiver locations if TRUE}
+
 \item{esrf}{- logical; turns off receiver & ESRF polygons if FALSE}
 }
 \description{

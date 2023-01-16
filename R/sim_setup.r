@@ -6,6 +6,7 @@
 #' @author Ian Jonsen \email{ian.jonsen@mq.edu.au}
 #'
 #' @param config - path to config.R script containing file.paths for required & optional environmental layers (see Details)
+#' @param deadsmolt - logical; turns on Miramichi & SoBI receiver locations if TRUE
 #' @param esrf - logical; turns off receiver & ESRF polygons if FALSE
 #' @importFrom raster raster stack brick projectRaster extract
 #' @importFrom sp coordinates<- proj4string<- CRS spTransform SpatialPointsDataFrame spsample

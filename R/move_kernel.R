@@ -60,10 +60,10 @@ move_kernel <- function(data, xy = NULL, mpar, i, s, ts, d2l, dir2l) {
     new.xy <- c(xy[1] + sin(phi) * s, xy[2] + cos(phi) * s)
 
     ## check if new xy close/on land
-    new.d2l <- extract(data$land, rbind(new.xy))
+    new.d2l <- extract(data$d2land, rbind(new.xy))
 
     ## if new location on land (0) then adjust so it's in water
-    if(!is.na(new.d2l) & new.d2l == 1) {
+    if(!is.na(new.d2l) & new.d2l == 0) {
       ## find all nearby cells within 5 km & select the one farthest from land
       cells <- extract(data$d2land, rbind(new.xy), buffer = 5, cellnumbers = TRUE, df = TRUE)
       cell.max <- cells[cells[, 3] == max(cells[, 3], na.rm = TRUE), 2][1]

@@ -27,7 +27,7 @@ sim_smolt <-
 
     if (is.null(data))
       stop("Can't find output from sim_setup()\n")
-    if (class(data$land)[1] != "RasterLayer") stop("d2land must be a RasterLayer")
+    if (class(data$d2land)[1] != "RasterLayer") stop("d2land must be a RasterLayer")
 
     N <- mpar$pars$N
 
@@ -139,7 +139,7 @@ sim_smolt <-
       ## overwrite s[i] if set to 0 (outside of preferred temp range) in movement kernel
       s[i] <- ds[i,3]
 
-      if((extract(data$land, rbind(xy[i, ])) == 1)  & any(!is.na(xy[i,]))) {
+      if(!is.na(extract(data$land, rbind(xy[i, ])))  & any(!is.na(xy[i,]))) {
         mpar$land <- TRUE
         cat("\n stopping simulation: stuck on land")
         break
