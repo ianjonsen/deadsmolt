@@ -8,6 +8,8 @@
 #' @export
 #'
 move_kernel <- function(data, xy = NULL, mpar, i, s, ts, d2l, dir2l) {
+  ## draw move step if scale param > 0, otherwise use s
+  if(mpar$pars$a > 0) s <- rweibull(1, s, mpar$pars$b)
 
     if (d2l > mpar$pars$buffer) {
       switch(mpar$scenario,

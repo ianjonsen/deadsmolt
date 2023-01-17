@@ -67,8 +67,8 @@ sim_par <-
       psi = 0.9,
       uvm = 1, # magnitude of current vectors: if uvm < 1 current strength is down-scaled
       buffer = 5,
-      b = 2,
-      a = 0,
+      a = 0, # wiebull scale parameter for move steps; if 0 then move steps are fixed at b
+      b = 2, # weibull scale parameter
       fl0 = 0.146,
       g = 0.006, # growth in forklength as % per day (re-scaled to hourly in simulation)
       surv = 0.9936, ## daily survival rate
