@@ -144,11 +144,13 @@ sim_smolt <-
           u[i] <- v[i] <- 0
         }
 
-        ## turn off advection in sobi.box b/c too challenging to get smolts through w currents...
-      } else if(!mpar$advect | all(xy[1] >= data$sobi.box[1],
-                                   xy[1] <= data$sobi.box[2],
-                                   xy[2] >= data$sobi.box[3],
-                                   xy[2] <= data$sobi.box[4])) {
+        ## smolt crosses into SoBI, turn of advection b/c it can overwhelm smolt swim speeds
+        ##    could also achieve this effect by speeding up smolts in SoBI...
+        if(xy[2] > data$sobi.box[3]) {
+          u[i] <- v[i] <- 0
+        }
+
+      } else if(!mpar$advect) {
         u[i] <- v[i] <- 0
       }
 
