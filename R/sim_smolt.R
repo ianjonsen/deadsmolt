@@ -141,7 +141,6 @@ sim_smolt <-
                         rbind(xy[i - 1, ]), method = "simple") * 3.6 * mpar$par$uvm
 
         if (any(is.na(u[i]), is.na(v[i]))) {
-          ## calc mean Temp within 2 km buffer of location @ time i-1
           u[i] <- v[i] <- 0
         }
 

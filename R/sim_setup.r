@@ -33,7 +33,7 @@ sim_setup <-
     if(deadsmolt) {
     out[["recLocs"]] <- ds_rec
     out[["recPoly"]] <- recPoly_sf
-    out[["sobi.box"]] <- c(2230,2350, 7050,7150)
+    out[["sobi.box"]] <- c(7050,7150, 2230,2350)
     }
 
     if(esrf) {
