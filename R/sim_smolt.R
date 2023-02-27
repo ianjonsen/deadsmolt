@@ -36,7 +36,7 @@ sim_smolt <-
     ## dl - displacements to deflect away from land
     xy <- matrix(NA, N, 2)
     xy[1,] <- cbind(mpar$pars$start)
-    ds <- matrix(NA, N, 3) #x, y, s
+    ds <- matrix(NA, N, 4) #x, y, s
 
     ## define other vectors
     ## reten - tag retained = 1, expelled = 0
@@ -46,7 +46,7 @@ sim_smolt <-
     ## u - advection in E-W (m/s)
     ## v - advection in N-S (m/s)
     ## ts - water temp (C)
-    reten <- dir <- surv <- d2l <- dir2l <- u <- v <- ts <- vector("numeric", N)
+    reten <- dir <- surv <- d2l <- dir2l <- phi <- u <- v <- ts <- vector("numeric", N)
     reten[1] <- 1
     surv[1] <- 1
 
@@ -56,27 +56,32 @@ sim_smolt <-
       ## fl - forklength in m
       s <- fl <- vector("numeric", N)
       fl[1] <- mpar$pars$fl0
-      s[1] <- fl[1] * mpar$pars$b * 3.6 ## initial swim speed (fl * b body-lengths / s) - in km/h
+      s[1] <- fl[1] * mpar$pars$bl * 3.6 ## initial swim speed (fl * b body-lengths / s) - in km/h
+      if(mpar$scenario == "mir") s[1] <- s[1] / 4 ## convert to 15 min time step
     } else {
       ## No growth - fixed size/speed params
       fl <- rep(mpar$pars$fl0, N)
-      s <- rep(fl * mpar$pars$b * 3.6, N)
+      s <- rep(fl * mpar$pars$bl * 3.6, N)
+      if(mpar$scenario == "mir") s <- s / 4 ## convert to 15 min time step
     }
 
     ## iterate movement
     for (i in 2:N) {
       if(i==2 && pb)  tpb <- txtProgressBar(min = 2, max = N, style = 3)
-      ## extract Temperature
-      ts[i - 1] <- extract(data$ts[[yday(mpar$pars$start.dt + i * 3600)]],
-                           rbind(xy[i - 1,])) - 273.15
-      if (is.na(ts[i - 1])) {
-        ## calc mean Temp within 2 km buffer of location @ time i-1
+      if (mpar$temp) {
+        ## extract Temperature
         ts[i - 1] <-
           extract(data$ts[[yday(mpar$pars$start.dt + i * 3600)]],
-                  rbind(xy[i - 1,]),
-                  buffer = 4,
-                  df = TRUE)[, 2] %>%
-          mean(., na.rm = TRUE) - 273.15
+                  rbind(xy[i - 1, ])) - 273.15
+        if (is.na(ts[i - 1])) {
+          ## calc mean Temp within 2 km buffer of location @ time i-1
+          ts[i - 1] <-
+            extract(data$ts[[yday(mpar$pars$start.dt + i * 3600)]],
+                    rbind(xy[i - 1, ]),
+                    buffer = 4,
+                    df = TRUE)[, 2] %>%
+            mean(., na.rm = TRUE) - 273.15
+        }
       }
 
       ### Apply Energetics
@@ -87,15 +92,29 @@ sim_smolt <-
         }
         ## calculate growth in current time step based on assumed daily % gr rate
         ##  smolts only growth when in optimal temp range defined by tsr
-        if (all(ts[i - 1] > mpar$pars$tsr[1], ts[i - 1] <= mpar$pars$tsr[2])) {
-          fl[i] <- fl[i-1] * (1 + mpar$pars$g) ^ (1/24) #re-scales daily rate to hourly
-        } else {
-          fl[i] <- fl[i-1]
-        }
+        switch(mpar$scenario,
+               sobi = {
+                 if (all(ts[i - 1] > mpar$pars$tsr[1], ts[i - 1] <= mpar$pars$tsr[2])) {
+                   fl[i] <- fl[i-1] * (1 + mpar$pars$g) ^ (1/24) #re-scales daily rate to hourly
+                 } else {
+                   fl[i] <- fl[i-1]
+                 }
+               },
+               mir = {
+                 fl[i] <- fl[i-1] * (1 + mpar$pars$g) ^ (1/(24*4)) #re-scales daily rate to 15 min timestep
+               })
+
 
         ## determine size-based average step for current time step
         ## assume avg swim speed of b bodylengths/s
-        s[i] <- fl[i] * mpar$pars$b * 3.6 ## forklength * b m/s converted to km/h
+        switch(mpar$scenario,
+               sobi = {
+                 s[i] <- fl[i] * mpar$pars$bl * 3.6 ## forklength * b m/s converted to km/h
+               },
+               mir = {
+                 s[i] <- fl[i] * mpar$pars$bl * 3.6 / 4 ## forklength * b m/s converted to km/15 min
+               })
+
       }
 
       ## calculate distance & direction to land
@@ -138,6 +157,7 @@ sim_smolt <-
                           ds[i, 2] + v[i])
       ## overwrite s[i] if set to 0 (outside of preferred temp range) in movement kernel
       s[i] <- ds[i,3]
+      phi[i] <- ds[i,4]
 
       if(!is.na(extract(data$land, rbind(xy[i, ])))  & any(!is.na(xy[i,]))) {
         mpar$land <- TRUE
@@ -153,9 +173,16 @@ sim_smolt <-
 
       ## determine survival
       if(!is.na(mpar$pars$surv)) {
-        surv[i] <-
-          rbinom(1, 1, mpar$pars$surv ^ (1 / 24)) # rescales daily survival to hourly
-        if (surv[i] == 0) {
+        switch(mpar$scenario,
+               sobi = {
+                 # rescales daily survival to hourly time step
+                 surv[i] <- rbinom(1, 1, mpar$pars$surv ^ (1 / 24))
+               },
+               mir = {
+                 # rescales daily survival to 15 min time step - surv param is per 15-min
+                 surv[i] <- rbinom(1, 1, mpar$pars$surv)
+               })
+       if (surv[i] == 0) {
           cat("\n smolt is dead")
           break
         }
@@ -163,7 +190,16 @@ sim_smolt <-
 
       ## determine tag retention
       if(!is.na(mpar$pars$reten) & i <= mpar$pars$Dreten*24) {
-        reten[i] <- rbinom(1, 1, mpar$pars$reten ^ (1 / 24))
+        switch(mpar$scenario,
+               sobi = {
+                 # rescales daily tag retention rate to hourly time step
+                 reten[i] <- rbinom(1, 1, mpar$pars$reten ^ (1 / 24))
+               },
+               mir = {
+                 # rescales daily tag retention rate to 15 min time step
+                 reten[i] <- rbinom(1, 1, mpar$pars$reten ^ (1 / (24*4)))
+               })
+
         if(reten[i] == 0) {
           cat("\n tag expulsion")
           break
@@ -192,9 +228,11 @@ sim_smolt <-
         d2land = d2l,
         dir2land = dir2l,
         fl = fl,
-        s = s,
         surv = surv,
-        reten = reten
+        reten = reten,
+        rho = mpar$pars$rho,
+        phi = phi,
+        bl = mpar$pars$bl
       )[1:N,]
 
     if(sum(is.na(X$ts)) == nrow(X)) {
@@ -205,18 +243,31 @@ sim_smolt <-
 
     sim <- X %>% as_tibble()
 
-    ## re records after sim is stopped for being stuck on land, etc...
+    ## remove records after sim is stopped for being stuck on land, etc...
     if(mpar$land | mpar$boundary) {
       sim <- sim %>%
-        filter((!is.na(x) & !is.na(y) & fl != 0 & s != 0) | surv != 1 | reten != 1)
+        filter((!is.na(x) & !is.na(y) & fl != 0) | surv != 1 | reten != 1)
     }
 
     nsim <- nrow(sim)
 
-    sim <- sim %>%
-      mutate(id = id) %>%
-      mutate(date = seq(mpar$pars$start.dt, by = 3600, length.out = nsim)) %>%
-      select(id, date, everything())
+
+    switch(mpar$scenario,
+           sobi = {
+             ## 1 h time step
+             sim <- sim %>%
+               mutate(id = id) %>%
+               mutate(date = seq(mpar$pars$start.dt, by = 3600, length.out = nsim)) %>%
+               select(id, date, everything())
+           },
+           mir = {
+             ## 15-min time step
+             sim <- sim %>%
+               mutate(id = id) %>%
+               mutate(date = seq(mpar$pars$start.dt, by = 3600/4, length.out = nsim)) %>%
+               select(id, date, everything())
+           })
+
 
     param <- mpar
     out <- list(sim = sim, params = param)

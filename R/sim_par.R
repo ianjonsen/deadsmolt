@@ -40,12 +40,10 @@ sim_par <-
            noise = NULL,
            growth = TRUE,
            shelf = TRUE,
-           scenario = "rs",
+           scenario = "sobi",
            land = FALSE,
            boundary = FALSE,
            ...) {
-
-    move <- match.arg(move)
 
     dots <- list(...)
 
@@ -54,21 +52,15 @@ sim_par <-
       start.dt = ISOdatetime(2023,05,25,16,00,00, tz = "UTC"),
       start = c(6912, 1465),
       coa = c(7120, 2350),
-      mdir = c(75,-45)/180*pi, # bias direction for N migration (S migration is mdir - pi)
-      NFline.x = runif(1, 7700, 7900), # location on x-axis at which smolt turns N to Lab Shelf
-      NFline.y = runif(1, 1950, 2125),
       tsr = c(4, 10), # C from Daniels et al. ASF sim modelling
       pN = 0.75,
-      rho = c(0.6, 0.4), # directional persistence for brw [1] and rw [2]
-      r = -0.001, # strength of attraction to coa
-      turn = 2.5, # rate at which smolts turn N after rounding NF
+      rho = 0.4, # directional persistence for brw
       ntries = 1,
-      ts.q = 0.75,
       psi = 0.9,
       uvm = 1, # magnitude of current vectors: if uvm < 1 current strength is down-scaled
       buffer = 5,
-      a = 0, # wiebull scale parameter for move steps; if 0 then move steps are fixed at b
-      b = 2, # weibull scale parameter
+      al = 0, # wiebull scale parameter for move steps; if 0 then move steps are fixed at b
+      bl = 2, # weibull scale parameter
       fl0 = 0.146,
       g = 0.006, # growth in forklength as % per day (re-scaled to hourly in simulation)
       surv = 0.9936, ## daily survival rate

@@ -1,13 +1,13 @@
 #' @title simulate acoustic transmissions & detection, using \code{simulate} & \code{sim_setup} output
-#' 
+#'
 #' @description simulates transmissions & detections along simulated track segments within a defined range of acoustic array(s)
-#' 
+#'
 #' @author Ian Jonsen \email{ian.jonsen@mq.edu.au}
-#' 
-#' @param s - a simsmolt class list containing output from sim_setup and sim_move
+#'
+#' @param s - a deadsmolt class list containing output from sim_setup and sim_smolt/sim_kelt
 #' @param delay - min & max time intervals (s) between transmissions
 #' @param burst - duration of each transmission (s)
-#' @param noise - range 0 - 1; simulate effect of noisy environment. Reduces detection prob w dist 
+#' @param noise - range 0 - 1; simulate effect of noisy environment. Reduces detection prob w dist
 #' by specified proportion; default = 1, no reduction
 #' @importFrom sp Polygon Polygons SpatialPolygons CRS
 #' @importFrom sf st_as_sf st_contains
@@ -16,30 +16,30 @@
 #' @importFrom dplyr %>% bind_rows mutate arrange desc
 #' @importFrom stats plogis
 #' @export
-#' 
+#'
 sim_detect <-
   function(s, data, delay = c(50,130), burst = 5.0, noise = 1){
-    
+
     ## simulate tag transmissions along track but only within +/-10 km of avg receiver location
     ##  otherwise trap() output is far too big to generate along full track
     ##    - convert locs from km to m grid; vel in m/s
 
     if(!exists("recLocs", data)) stop("no receiver locations present in data")
-    
-    recLocs <- data$recLocs 
+
+    recLocs <- data$recLocs
     trans <- tmp.tr <- dt <- tmp.dt <- NULL
     b <- s$params$pars$pdrf
-    
+
     if(exists("rec", data)) {
       if (data$rec == "lines") {
         yrec <- recLocs$y %>% unique()
-        
+
         in.rng <- lapply(1:length(yrec), function(i) {
           which(abs(yrec[i] - s$sim[, "y"]) <= 1.5)
         })
         ## drop rec lines that smolt did not cross
         in.rng <- in.rng[which(sapply(in.rng, length) > 0)]
-        
+
         ## simulate transmissions
         trans <- lapply(1:length(in.rng), function(i) {
           path <- s$sim[in.rng[[i]], c("id", "date", "x", "y")]
@@ -48,7 +48,7 @@ sim_detect <-
           #          mutate(line = rep(paste0("l", i), nrow(.)))
         }) %>%
           do.call(rbind, .)
-        
+
       } else if (data$rec != "lines") {
         sim_sf <- st_as_sf(s$sim, coords = c("x", "y"), crs = data$prj)
         in.rng <- st_contains(data$recPoly, sim_sf)[[1]]
@@ -84,23 +84,23 @@ sim_detect <-
       recLocs <- recLocs %>%
         mutate(x = x * 1000, y = y * 1000)
 
-      if(!is.null(trans)) {     
-      detect <- trans %>% 
-        pdet(trs = ., rec = recLocs[, c("id","array","x","y","z")], b = b, noise = noise)
+      if(!is.null(trans)) {
+      detect <- trans %>%
+        pdet(trs = ., rec = recLocs[, c("id","locality","x","y","z")], b = b, noise = noise)
       } else {
         detect <- NULL
       }
-      
+
 #      s$trans <- trans %>%
 #        select(id, date, x, y) %>%
 #        arrange(date)
-      
+
       if(!is.null(detect)) {
       s$detect <- detect %>%
         arrange(date, recv_id, trns_id)
       } else {
         s$detect <- detect
       }
- 
+
     return(s)
   }

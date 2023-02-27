@@ -11,7 +11,7 @@ sim_par(
   noise = NULL,
   growth = TRUE,
   shelf = TRUE,
-  scenario = "rs",
+  scenario = "sobi",
   land = FALSE,
   boundary = FALSE,
   ...

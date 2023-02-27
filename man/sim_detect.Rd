@@ -7,13 +7,13 @@
 sim_detect(s, data, delay = c(50, 130), burst = 5, noise = 1)
 }
 \arguments{
-\item{s}{- a simsmolt class list containing output from sim_setup and sim_move}
+\item{s}{- a deadsmolt class list containing output from sim_setup and sim_smolt/sim_kelt}
 
 \item{delay}{- min & max time intervals (s) between transmissions}
 
 \item{burst}{- duration of each transmission (s)}
 
-\item{noise}{- range 0 - 1; simulate effect of noisy environment. Reduces detection prob w dist 
+\item{noise}{- range 0 - 1; simulate effect of noisy environment. Reduces detection prob w dist
 by specified proportion; default = 1, no reduction}
 }
 \description{

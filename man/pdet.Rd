@@ -13,7 +13,7 @@ pdet(trs = NULL, rec = NULL, b = NULL, noise = 1)
 
 \item{b}{- a vector of two parameters (intercept & slope) for logistic detection range function}
 
-\item{noise}{- range 0 - 1; simulate effect of noisy environment. Reduces detection prob w dist 
+\item{noise}{- range 0 - 1; simulate effect of noisy environment. Reduces detection prob w dist
 by specified proportion; default = 1, no reduction}
 }
 \description{

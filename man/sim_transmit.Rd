@@ -7,16 +7,16 @@
 sim_transmit(path = NA, delayRng = c(60, 180), burstDur = 5)
 }
 \arguments{
-\item{path}{A two-column data frame with at least two rows and columns 
+\item{path}{A two-column data frame with at least two rows and columns
 \code{x} and \code{y} with coordinates that define path.}
 
-\item{delayRng}{A 2-element numeric vector with minimum and maximum delay 
+\item{delayRng}{A 2-element numeric vector with minimum and maximum delay
 (time in seconds from end of one coded burst to beginning of next).}
 
-\item{burstDur}{A numeric scalar with duration (in seconds) of each coded 
+\item{burstDur}{A numeric scalar with duration (in seconds) of each coded
 burst (i.e., pulse train).}
 
-\item{vel}{A numeric scalar with movement velocity along track; assumed 
+\item{vel}{A numeric scalar with movement velocity along track; assumed
 constant.}
 }
 \value{
@@ -32,13 +32,13 @@ A two-column data frame containing:
 }
 \details{
 Delays are drawn from uniform distribution defined by delay range.
-First, elapsed time in seconds at each node in path is calculated based on 
-path length and velocity. Next, delays are simulated and burst durations 
-are added toeach delay to determine the time of each signal transmission. 
+First, elapsed time in seconds at each node in path is calculated based on
+path length and velocity. Next, delays are simulated and burst durations
+are added toeach delay to determine the time of each signal transmission.
 Location of each signal transmission along the path is linearly interpolated.
 }
 \note{
-This function was written to be called before 
+This function was written to be called before
   \code{\link{detect_transmissions}}, which was designed to accept the result
   as input (\code{trnsLoc}).
 }
