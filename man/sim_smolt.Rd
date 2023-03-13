@@ -4,7 +4,7 @@
 \alias{sim_smolt}
 \title{simulate smolt migration}
 \usage{
-sim_smolt(id = 1, data = NULL, mpar = sim_par(), pb = TRUE)
+sim_smolt(id = 1, data = NULL, mpar = sim_smolt_par(), pb = TRUE)
 }
 \arguments{
 \item{id}{- identifier for simulation run (individual animal)}

@@ -1,4 +1,4 @@
-##' \code{sim_par} defines the simulation parameters & control scenarios used by \code{sim_smolt}.
+##' \code{sim_kelt_par} defines the simulation parameters & control scenarios used by \code{sim_kelt}.
 ##'
 ##' The movement process used predominantly in the simulation is
 ##' selected by the \code{move} argument.  Additional
@@ -13,7 +13,7 @@
 ##' @param temp logical
 ##' @param advect logical
 ##' @param growth logical
-##' @param scenario migration scenarios: sobi or mir
+##' @param scenario migration scenarios: rs = repeat spawner
 ##' @param land keep track of sim rep hitting land (TRUE)
 ##' @param boundary keep track of sim rep hitting sim boundary (TRUE)
 ##' @param ... additional simulation control parameters
@@ -30,11 +30,11 @@
 ##'   \item{\code{pars}}{list of additional, required control parameters}
 ##' @export
 
-sim_par <-
+sim_kelt_par <-
   function(temp = TRUE,
            advect = TRUE,
            growth = TRUE,
-           scenario = "sobi",
+           scenario = "rs",
            land = FALSE,
            boundary = FALSE,
            ...) {
@@ -45,23 +45,23 @@ sim_par <-
       N = 1440,
       start.dt = ISOdatetime(2023,05,25,16,00,00, tz = "UTC"),
       start = c(6912, 1465),
-      coa = c(7120, 2350),
-      tsr = c(4, 10), # C from Daniels et al. ASF sim modelling
+      coa = cbind(c(runif(1,6750,7280), 6912), c(runif(1, 1600,1900), 1465)),
+      rd = 58, # repeat spawner reconditioning time at sea in days
+      tsr = c(2, 17), # C from Daniels et al. ASF sim modelling
       pN = 0.75,
-      rho = 0.4, # directional persistence for brw
+      nu = c(1, 2),
+      rho = c(0.5, 0.8), # directional persistence for brw
       ntries = 1,
       psi = 0.9,
       uvm = 1, # magnitude of current vectors: if uvm < 1 current strength is down-scaled
       buffer = 5,
       al = 0, # wiebull scale parameter for move steps; if 0 then move steps are fixed at b
       bl = 2, # weibull scale parameter
-      fl0 = 0.146,
-      g = 0.006, # growth in forklength as % per day (re-scaled to hourly in simulation)
-      surv = 0.9936, ## daily survival rate
-      reten = 0.845^(1/60), ## daily V7/8 tag retention rate (in first ~ 60 d - Brundson et al 2019 ICES JMarSci 76:7)
-      Dreten = 60, ## number of days within which tags can be expulsed
+      fl0 = 0.75,
+      g = 0.001, # growth in forklength as % per day (re-scaled to hourly in simulation)
+      surv = 0.998, ## daily survival rate
       pdrf = c(5, -0.02), # = p(0.5) @ 250 m  + < 0.01 @ 500 m   [c(4.865, -0.0139)  (~ consistent w HFX line V9 @ high power)]
-      beta = c(-2, -2) # potential fn params to keep smolts off land
+      beta = c(-10, -10) # potential fn params to keep kelts off land
     )
 
     ## overide default control pars

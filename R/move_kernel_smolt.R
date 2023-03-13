@@ -5,7 +5,7 @@
 #' @importFrom CircStats rwrpcauchy
 #' @importFrom stats rweibull
 #' @importFrom raster extract xyFromCell
-#' @export
+#' @keywords internal
 #'
 move_kernel_smolt <- function(data, xy = NULL, mpar, i, s, ts, d2l, dir2l) {
 

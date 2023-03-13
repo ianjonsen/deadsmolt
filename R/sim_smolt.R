@@ -20,7 +20,7 @@
 sim_smolt <-
   function(id=1,
            data = NULL,
-           mpar = sim_par(),
+           mpar = sim_smolt_par(),
            pb = TRUE
   ) {
 
@@ -81,6 +81,9 @@ sim_smolt <-
                     buffer = 4,
                     df = TRUE)[, 2] %>%
             mean(., na.rm = TRUE) - 273.15
+
+          ## if still NA
+          if (is.na(ts[i - 1]) & i > 2) ts[i - 1] <- ts[i - 2]
         }
       }
 
@@ -122,7 +125,7 @@ sim_smolt <-
       dir2l[i-1] <- extract(data$dir2land, rbind(xy[i-1, ]))
 
       ## Movement kernel
-      ds[i,] <- move_kernel(data,
+      ds[i,] <- move_kernel_smolt(data,
                          xy = xy[i-1,],
                          mpar = mpar,
                          i,
@@ -146,7 +149,7 @@ sim_smolt <-
 
         ## smolt crosses into SoBI, turn of advection b/c it can overwhelm smolt swim speeds
         ##    could also achieve this effect by speeding up smolts in SoBI...
-        if(xy[2] > data$sobi.box[3]) {
+        if((ds[i,2]) > data$sobi.box[3]) {
           u[i] <- v[i] <- 0
         }
 

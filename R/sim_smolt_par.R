@@ -30,7 +30,7 @@
 ##'   \item{\code{pars}}{list of additional, required control parameters}
 ##' @export
 
-sim_par <-
+sim_smolt_par <-
   function(temp = TRUE,
            advect = TRUE,
            growth = TRUE,

@@ -23,7 +23,8 @@ sim_setup <-
     out <- list(
       land = suppressWarnings(raster(land)),
       d2land = suppressWarnings(raster(d2land)),
-      dir2land = suppressWarnings(raster(dir2land))
+      dir2land = suppressWarnings(raster(dir2land)),
+      grad = suppressWarnings(stack(grad))
     )
 
     out[["u"]] <- suppressWarnings(stack(file.path(riops, "riops_doy_u.grd")))
