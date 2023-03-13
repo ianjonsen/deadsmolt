@@ -45,7 +45,7 @@ sim_kelt_par <-
       N = 1440,
       start.dt = ISOdatetime(2023,05,25,16,00,00, tz = "UTC"),
       start = c(6912, 1465),
-      coa = cbind(c(runif(1,6750,7280), 6912), c(runif(1, 1600,1900), 1465)),
+      coa = list(c(runif(1,6750,7280), runif(1, 1600,1900)), c(6912, 1465)),
       rd = 58, # repeat spawner reconditioning time at sea in days
       tsr = c(2, 17), # C from Daniels et al. ASF sim modelling
       pN = 0.75,

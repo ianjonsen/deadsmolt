@@ -12,8 +12,8 @@ move_kernel_kelt <- function(data, xy = NULL, mpar, s, ts, i) {
   if(mpar$scenario == "rs") {
     ## biased random walk toward a Center of Attraction
       if(i <= round(mpar$pars$rd * 24 * 0.9)) {
-        if(all(!is.na(mpar$pars$coa[1,]))) {
-          delta <- c(mpar$pars$coa[1,1] - xy[1], mpar$pars$coa[1,2] - xy[2])
+        if(all(!is.na(mpar$pars$coa[[1]]))) {
+          delta <- c(mpar$pars$coa[[1]][1] - xy[1], mpar$pars$coa[[1]][2] - xy[2])
           psi <- atan2(delta[1], delta[2])
           phi <- atan2(sin(xy[3]) + mpar$pars$nu[1] * sin(psi), cos(xy[3]) + mpar$pars$nu[1] * cos(psi))
         } else {
@@ -22,7 +22,7 @@ move_kernel_kelt <- function(data, xy = NULL, mpar, s, ts, i) {
         mu <- rwrpcauchy(1, phi, mpar$pars$rho[1])
 
       } else if (i > round(mpar$pars$rd * 24 * 0.9)) {
-        delta <- c(mpar$pars$coa[2,1] - xy[1], mpar$pars$coa[2,2] - xy[2])
+        delta <- c(mpar$pars$coa[[2]][1] - xy[1], mpar$pars$coa[[2]][2] - xy[2])
         psi <- atan2(delta[1], delta[2])
         phi <- atan2(sin(xy[3]) + mpar$pars$nu[2] * sin(psi), cos(xy[3]) + mpar$pars$nu[2] * cos(psi))
         mu <- rwrpcauchy(1, phi, mpar$pars$rho[2])
