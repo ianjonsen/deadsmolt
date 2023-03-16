@@ -15,17 +15,24 @@
 #' @export
 #'
 sim_setup <-
-  function(config = config, deadsmolt = FALSE, esrf = TRUE) {
+  function(config = config, deadsmolt = FALSE, esrf = TRUE, kelt = FALSE) {
 
     suppressWarnings(source(config, local = TRUE, echo=FALSE))
     if(is.null(prj)) prj <- "+proj=stere +lat_0=90 +lon_0=-100 +k=0.933012425899506 +x_0=4245000 +y_0=5295000 +R=6371229 +units=km +no_defs"
 
+    if(!kelt) {
     out <- list(
       land = suppressWarnings(raster(land)),
       d2land = suppressWarnings(raster(d2land)),
       dir2land = suppressWarnings(raster(dir2land)),
       grad = suppressWarnings(stack(grad))
     )
+    } else {
+      out <- list(
+        land = suppressWarnings(raster(land)),
+        grad = suppressWarnings(stack(grad))
+      )
+    }
 
     out[["u"]] <- suppressWarnings(stack(file.path(riops, "riops_doy_u.grd")))
     out[["v"]] <- suppressWarnings(stack(file.path(riops, "riops_doy_v.grd")))

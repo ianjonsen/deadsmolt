@@ -2,7 +2,7 @@
 % Please edit documentation in R/move_kernel_kelt.R
 \name{move_kernel_kelt}
 \alias{move_kernel_kelt}
-\title{biased random walk movement kernel for Miramichi repeat-spawner kelts}
+\title{biased, correlated random walk movement kernel for Miramichi repeat-spawner kelts}
 \usage{
 move_kernel_kelt(data, xy = NULL, mpar, s, ts, i)
 }

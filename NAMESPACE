@@ -2,9 +2,7 @@
 
 S3method(print,summary.simsmolt)
 S3method(summary,simsmolt)
-export(brw)
 export(pdet)
-export(rw)
 export(sim_detect)
 export(sim_kelt)
 export(sim_kelt_par)

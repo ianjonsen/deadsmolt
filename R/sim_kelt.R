@@ -27,7 +27,7 @@ sim_kelt <-
 
     if (is.null(data))
       stop("Can't find output from sim_setup()\n")
-    if (class(data$d2land)[1] != "RasterLayer") stop("d2land must be a RasterLayer")
+    if (class(data$land)[1] != "RasterLayer") stop("land must be a RasterLayer")
 
     N <- mpar$pars$N
 
@@ -47,7 +47,8 @@ sim_kelt <-
     ## u - advection in E-W (m/s)
     ## v - advection in N-S (m/s)
     ## ts - water temp (C)
-    surv <- u <- v <- ts <- vector("numeric", N)
+    u <- v <- ts <- vector("numeric", N)
+    surv <- rep(NA, N)
     surv[1] <- 1
 
     ## initialise growth params or set fixed params if no growth
@@ -165,13 +166,21 @@ sim_kelt <-
 
       if(!is.na(extract(data$land, rbind(xy[i, 1:2])))  & any(!is.na(xy[i,]))) {
         mpar$land <- TRUE
+        surv[i] <- 1
         cat("\n stopping simulation: stuck on land")
         break
       }
 
       if(any(is.na(xy[i, ]))) {
         mpar$boundary <- TRUE
+        surv[i] <- 1
         cat("\n stopping simulation: hit a boundary")
+        break
+      }
+
+      if(xy[i, 2] >= 2365) {
+        surv[i] <- 1
+        cat("\n migrated to Labrodor Sea")
         break
       }
 
@@ -215,9 +224,7 @@ sim_kelt <-
         ts = ts,
         fl = fl,
         surv = surv,
-        rho = mpar$pars$rho,
-        mu = xy[, 3],
-        bl = mpar$pars$bl
+        mu = xy[, 3]
       )[1:N,]
 
     if(sum(is.na(X$ts)) == nrow(X)) {

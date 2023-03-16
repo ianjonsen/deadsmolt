@@ -49,8 +49,9 @@ sim_kelt_par <-
       rd = 58, # repeat spawner reconditioning time at sea in days
       tsr = c(2, 17), # C from Daniels et al. ASF sim modelling
       pN = 0.75,
-      nu = c(1, 2),
-      rho = c(0.5, 0.8), # directional persistence for brw
+      nu = c(1, 2), # strength of bias to CoA
+      r = c(0.01, 0.05), # scaling param for magnitude of rho as fn of dist from CoA
+      rho = 0.7, # directional persistence for crw
       ntries = 1,
       psi = 0.9,
       uvm = 1, # magnitude of current vectors: if uvm < 1 current strength is down-scaled
@@ -61,7 +62,7 @@ sim_kelt_par <-
       g = 0.001, # growth in forklength as % per day (re-scaled to hourly in simulation)
       surv = 0.998, ## daily survival rate
       pdrf = c(5, -0.02), # = p(0.5) @ 250 m  + < 0.01 @ 500 m   [c(4.865, -0.0139)  (~ consistent w HFX line V9 @ high power)]
-      beta = c(-10, -10) # potential fn params to keep kelts off land
+      beta = c(-5,-5) # potential fn params to keep kelts off land
     )
 
     ## overide default control pars
