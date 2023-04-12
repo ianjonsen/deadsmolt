@@ -70,5 +70,5 @@ sim_detect <-
         s$detect <- detect
       }
 
-    return(as_tibble(s))
+    return(s)
   }
