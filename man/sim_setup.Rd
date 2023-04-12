@@ -4,7 +4,7 @@
 \alias{sim_setup}
 \title{Pre-simulation setup}
 \usage{
-sim_setup(config = config, deadsmolt = FALSE, esrf = TRUE, kelt = FALSE)
+sim_setup(config = config, deadsmolt = FALSE, esrf = TRUE, scenario = NULL)
 }
 \arguments{
 \item{config}{- path to config.R script containing file.paths for required & optional environmental layers (see Details)}

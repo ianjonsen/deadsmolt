@@ -27,16 +27,15 @@ sim_smolt <-
 
     if (is.null(data))
       stop("Can't find output from sim_setup()\n")
-    if (class(data$d2land)[1] != "RasterLayer") stop("d2land must be a RasterLayer")
+    if (class(data$land)[1] != "RasterLayer") stop("land must be a RasterLayer")
 
     N <- mpar$pars$N
 
     ## define location matrix & initialise start position
-    ## ds - active swimming displacements
-    ## dl - displacements to deflect away from land
-    xy <- matrix(NA, N, 2)
-    xy[1,] <- cbind(mpar$pars$start)
-    ds <- matrix(NA, N, 4) #x, y, s
+    xy <- matrix(NA, N, 3)
+    xy[1, 1:2] <- cbind(mpar$pars$start)
+    xy[1, 3] <- 0
+    ds <- matrix(NA, N, 4)
 
     ## define other vectors
     ## reten - tag retained = 1, expelled = 0
@@ -46,7 +45,8 @@ sim_smolt <-
     ## u - advection in E-W (m/s)
     ## v - advection in N-S (m/s)
     ## ts - water temp (C)
-    reten <- dir <- surv <- d2l <- dir2l <- phi <- u <- v <- ts <- vector("numeric", N)
+    u <- v <- ts <- vector("numeric", N)
+    reten <- surv <- rep(NA, N)
     reten[1] <- 1
     surv[1] <- 1
 
@@ -72,12 +72,12 @@ sim_smolt <-
         ## extract Temperature
         ts[i - 1] <-
           extract(data$ts[[yday(mpar$pars$start.dt + i * 3600)]],
-                  rbind(xy[i - 1, ])) - 273.15
+                  rbind(xy[i - 1, 1:2])) - 273.15
         if (is.na(ts[i - 1])) {
           ## calc mean Temp within 2 km buffer of location @ time i-1
           ts[i - 1] <-
             extract(data$ts[[yday(mpar$pars$start.dt + i * 3600)]],
-                    rbind(xy[i - 1, ]),
+                    rbind(xy[i - 1, 1:2]),
                     buffer = 4,
                     df = TRUE)[, 2] %>%
             mean(., na.rm = TRUE) - 273.15
@@ -90,7 +90,7 @@ sim_smolt <-
       ### Apply Energetics
       if (mpar$growth) {
         if (is.na(ts[i - 1])) {
-          cat("\n stopping simulation: NA value for temperature")
+          message("stopping simulation: NA value for temperature")
           break
         }
         ## calculate growth in current time step based on assumed daily % gr rate
@@ -120,28 +120,22 @@ sim_smolt <-
 
       }
 
-      ## calculate distance & direction to land
-      d2l[i-1] <- extract(data$d2land, rbind(xy[i-1, ]))
-      dir2l[i-1] <- extract(data$dir2land, rbind(xy[i-1, ]))
-
       ## Movement kernel
-      ds[i,] <- move_kernel_smolt(data,
-                         xy = xy[i-1,],
-                         mpar = mpar,
-                         i,
-                         s = s[i],
-                         ts = ts[i-1],
-                         d2l = d2l[i-1],
-                         dir2l = dir2l[i-1])
+      ds[i,] <- move_kernel_smolt2(data,
+                                 xy = xy[i-1,],
+                                 mpar = mpar,
+                                 s = s[i],
+                                 ts = ts[i-1],
+                                 i)
 
       ### Current Advection
       if (mpar$advect) {
         ## determine envt'l forcing
         ## determine advection due to current, convert from m/s to km/h
         u[i] <- extract(data$u[[yday(mpar$pars$start.dt + i * 3600)]],
-                        rbind(xy[i - 1, ]), method = "simple") * 3.6 * mpar$par$uvm
+                        rbind(xy[i - 1, 1:2]), method = "simple") * 3.6 * mpar$par$uvm
         v[i] <- extract(data$v[[yday(mpar$pars$start.dt + i * 3600)]],
-                        rbind(xy[i - 1, ]), method = "simple") * 3.6 * mpar$par$uvm
+                        rbind(xy[i - 1, 1:2]), method = "simple") * 3.6 * mpar$par$uvm
 
         if (any(is.na(u[i]), is.na(v[i]))) {
           u[i] <- v[i] <- 0
@@ -157,21 +151,30 @@ sim_smolt <-
         u[i] <- v[i] <- 0
       }
 
-      xy[i, 1:2] <- cbind(ds[i, 1] + u[i],
-                          ds[i, 2] + v[i])
-      ## overwrite s[i] if set to 0 (outside of preferred temp range) in movement kernel
-      s[i] <- ds[i,3]
-      phi[i] <- ds[i,4]
+      xy[i, ] <- cbind(ds[i, 1] + u[i],
+                       ds[i, 2] + v[i],
+                       ds[i, 3])
 
-      if(!is.na(extract(data$land, rbind(xy[i, ])))  & any(!is.na(xy[i,]))) {
+      ## overwrite s[i] if set to 0 (outside of preferred temp range) in movement kernel
+      s[i] <- ds[i,4]
+
+      if(!is.na(extract(data$land, rbind(xy[i, 1:2])))  & any(!is.na(xy[i,]))) {
         mpar$land <- TRUE
-        cat("\n stopping simulation: stuck on land")
+        surv[i] <- 1
+        message("stopping simulation: stuck on land")
         break
       }
 
       if(any(is.na(xy[i, ]))) {
         mpar$boundary <- TRUE
-        cat("\n stopping simulation: hit a boundary")
+        surv[i] <- 1
+        message("stopping simulation: hit a boundary")
+        break
+      }
+
+      if(xy[i, 2] >= 2365) {
+        surv[i] <- 1
+        message("migrated to Labrodor Sea")
         break
       }
 
@@ -187,7 +190,7 @@ sim_smolt <-
                  surv[i] <- rbinom(1, 1, mpar$pars$surv)
                })
        if (surv[i] == 0) {
-          cat("\n smolt is dead")
+          message("smolt is dead")
           break
         }
       }
@@ -205,7 +208,7 @@ sim_smolt <-
                })
 
         if(reten[i] == 0) {
-          cat("\n tag expulsion")
+          message("tag expulsion")
           break
         }
       } else if(!is.na(mpar$pars$reten) & i > mpar$pars$Dreten*24) {
@@ -229,14 +232,10 @@ sim_smolt <-
         u = u,
         v = v,
         ts = ts,
-        d2land = d2l,
-        dir2land = dir2l,
         fl = fl,
         surv = surv,
         reten = reten,
-        rho = mpar$pars$rho,
-        phi = phi,
-        bl = mpar$pars$bl
+        mu = xy[, 3]
       )[1:N,]
 
     if(sum(is.na(X$ts)) == nrow(X)) {

@@ -92,7 +92,7 @@ sim_kelt <-
       ### Apply Energetics
       if (mpar$growth) {
         if (is.na(ts[i - 1])) {
-          cat("\n stopping simulation: NA value for temperature")
+          message("stopping simulation: NA value for temperature")
           break
         }
         ## calculate growth in current time step based on assumed daily % gr rate
@@ -157,30 +157,30 @@ sim_kelt <-
         u[i] <- v[i] <- 0
       }
 
-      xy[i, 1:2] <- cbind(ds[i, 1] + u[i],
-                          ds[i, 2] + v[i])
+      xy[i, ] <- cbind(ds[i, 1] + u[i],
+                       ds[i, 2] + v[i],
+                       ds[i, 3])
 
       ## overwrite s[i] if set to 0 (outside of preferred temp range) in movement kernel
-      xy[i,3] <- ds[i,3]
       s[i] <- ds[i,4]
 
       if(!is.na(extract(data$land, rbind(xy[i, 1:2])))  & any(!is.na(xy[i,]))) {
         mpar$land <- TRUE
         surv[i] <- 1
-        cat("\n stopping simulation: stuck on land")
+        message("stopping simulation: stuck on land")
         break
       }
 
       if(any(is.na(xy[i, ]))) {
         mpar$boundary <- TRUE
         surv[i] <- 1
-        cat("\n stopping simulation: hit a boundary")
+        message("stopping simulation: hit a boundary")
         break
       }
 
       if(xy[i, 2] >= 2365) {
         surv[i] <- 1
-        cat("\n migrated to Labrodor Sea")
+        message("migrated to Labrodor Sea")
         break
       }
 
@@ -200,7 +200,7 @@ sim_kelt <-
                  surv[i] <- rbinom(1, 1, mpar$pars$surv ^ (1 / 24))
                })
         if (surv[i] == 0) {
-          cat("\n kelt is dead")
+          message("kelt is dead")
           break
         }
       }

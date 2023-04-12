@@ -15,24 +15,17 @@
 #' @export
 #'
 sim_setup <-
-  function(config = config, deadsmolt = FALSE, esrf = TRUE, kelt = FALSE) {
+  function(config = config, deadsmolt = FALSE, esrf = TRUE, scenario = NULL) {
 
     suppressWarnings(source(config, local = TRUE, echo=FALSE))
     if(is.null(prj)) prj <- "+proj=stere +lat_0=90 +lon_0=-100 +k=0.933012425899506 +x_0=4245000 +y_0=5295000 +R=6371229 +units=km +no_defs"
 
-    if(!kelt) {
     out <- list(
-      land = suppressWarnings(raster(land)),
-      d2land = suppressWarnings(raster(d2land)),
-      dir2land = suppressWarnings(raster(dir2land)),
-      grad = suppressWarnings(stack(grad))
-    )
-    } else {
-      out <- list(
         land = suppressWarnings(raster(land)),
         grad = suppressWarnings(stack(grad))
       )
-    }
+
+    if(scenario == "mir") out[["dir"]] <- suppressWarnings(raster(dir))
 
     out[["u"]] <- suppressWarnings(stack(file.path(riops, "riops_doy_u.grd")))
     out[["v"]] <- suppressWarnings(stack(file.path(riops, "riops_doy_v.grd")))
@@ -41,7 +34,7 @@ sim_setup <-
     if(deadsmolt) {
     out[["recLocs"]] <- ds_rec
     out[["recPoly"]] <- recPoly_sf
-    out[["sobi.box"]] <- c(7050,7150, 2230,2350)
+    out[["sobi.box"]] <- sobi.box
     }
 
     if(esrf) {

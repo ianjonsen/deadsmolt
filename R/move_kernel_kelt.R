@@ -55,7 +55,7 @@ move_kernel_kelt <- function(data, xy = NULL, mpar, s, ts, i) {
 
     ## if provisional new2.xy is on land then find a location in water, 1km from land
     if (!is.na(extract(data$land, rbind(new2.xy)))) {
-      cat("finding water")
+      message("finding water")
       cells <-
         extract(
           data$grad[[1]],

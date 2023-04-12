@@ -8,7 +8,7 @@ sim_smolt_par(
   temp = TRUE,
   advect = TRUE,
   growth = TRUE,
-  scenario = "sobi",
+  scenario = c("sobi", "mir"),
   land = FALSE,
   boundary = FALSE,
   ...

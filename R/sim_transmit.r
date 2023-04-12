@@ -44,7 +44,7 @@
 sim_transmit <- function(path = NA, delayRng = c(60, 180), burstDur = 5.0) {
   #cumulative distance travelled in meters
   path$cumdistm <- c(0, cumsum(sqrt(diff(path$x)^2 + diff(path$y)^2)))
-  path$etime <- c(0,cumsum(as.numeric(difftime(path$date, lag(path$date), units = "secs"))[-1])) #elapsed time in s
+  path$etime <- c(0, cumsum(as.numeric(difftime(path$date, lag(path$date), units = "secs"))[-1])) #elapsed time in s
   ntrns <- max(path$etime) / (delayRng[1] + burstDur)
   ints <- runif(ntrns, delayRng[1] + burstDur, delayRng[2] + burstDur)
   ints[1] <- runif(1, 0, ints[1]) #draw random the start time

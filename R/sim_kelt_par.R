@@ -52,11 +52,8 @@ sim_kelt_par <-
       nu = c(1, 2), # strength of bias to CoA
       r = c(0.01, 0.05), # scaling param for magnitude of rho as fn of dist from CoA
       rho = 0.7, # directional persistence for crw
-      ntries = 1,
-      psi = 0.9,
       uvm = 1, # magnitude of current vectors: if uvm < 1 current strength is down-scaled
       buffer = 5,
-      al = 0, # wiebull scale parameter for move steps; if 0 then move steps are fixed at b
       bl = 2, # weibull scale parameter
       fl0 = 0.75,
       g = 0.001, # growth in forklength as % per day (re-scaled to hourly in simulation)

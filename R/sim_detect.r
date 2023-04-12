@@ -13,7 +13,7 @@
 #' @importFrom sf st_as_sf st_contains
 #' @importFrom raster buffer
 #' @importFrom prevR point.in.SpatialPolygons
-#' @importFrom dplyr %>% bind_rows mutate arrange desc
+#' @importFrom dplyr %>% bind_rows mutate arrange desc as_tibble
 #' @importFrom stats plogis
 #' @export
 #'
@@ -30,50 +30,18 @@ sim_detect <-
     trans <- tmp.tr <- dt <- tmp.dt <- NULL
     b <- s$params$pars$pdrf
 
-    if(exists("rec", data)) {
-      if (data$rec == "lines") {
-        yrec <- recLocs$y %>% unique()
-
-        in.rng <- lapply(1:length(yrec), function(i) {
-          which(abs(yrec[i] - s$sim[, "y"]) <= 1.5)
-        })
-        ## drop rec lines that smolt did not cross
-        in.rng <- in.rng[which(sapply(in.rng, length) > 0)]
-
-        ## simulate transmissions
-        trans <- lapply(1:length(in.rng), function(i) {
-          path <- s$sim[in.rng[[i]], c("id", "date", "x", "y")]
-          path[, c("x", "y")] <- path[, c("x", "y")] * 1000
-          sim_transmit(path, delayRng = delay, burstDur = burst) #%>%
-          #          mutate(line = rep(paste0("l", i), nrow(.)))
-        }) %>%
-          do.call(rbind, .)
-
-      } else if (data$rec != "lines") {
-        sim_sf <- st_as_sf(s$sim, coords = c("x", "y"), crs = data$prj)
-        in.rng <- st_contains(data$recPoly, sim_sf)[[1]]
-        path <- s$sim[in.rng, c("id", "date", "x", "y")]
-        path[, c("x", "y")] <- path[, c("x", "y")] * 1000
-        if (length(in.rng >= 1)) {
-          trans <- sim_transmit(path, delayRng = delay, burstDur = burst)
-        } else {
-          trans <- NULL
-        }
+    if (!is.null(data$recPoly)) {
+      sim_sf <- st_as_sf(s$sim, coords = c("x", "y"), crs = data$prj)
+      in.rng <- st_contains(data$recPoly, sim_sf)[[1]]
+    } else {
+      in.rng <- rep(TRUE, nrow(s$sim))
     }
-    } else if(!exists("rec", data)) {
-      if(!is.null(data$recPoly)) {
-        sim_sf <- st_as_sf(s$sim, coords = c("x", "y"), crs = data$prj)
-        in.rng <- st_contains(data$recPoly, sim_sf)[[1]]
-      } else {
-        in.rng <- rep(TRUE, nrow(s$sim))
-      }
-      path <- s$sim[in.rng, c("id","date","x","y")]
-      path[, c("x","y")] <- path[, c("x","y")] * 1000
-      if(length(in.rng) >= 1) {
-        trans <- sim_transmit(path, delayRng = delay, burstDur = burst)
-      } else {
-        trans <- NULL
-      }
+    path <- s$sim[in.rng, c("id", "date", "x", "y")]
+    path[, c("x", "y")] <- path[, c("x", "y")] * 1000 # convert km to m
+    if (length(in.rng) >= 1) {
+      trans <- sim_transmit(path, delayRng = delay, burstDur = burst)
+    } else {
+      trans <- NULL
     }
 
     ## define logistic detection range (m) function
@@ -81,12 +49,12 @@ sim_detect <-
     ## in July 2009 & July 2010 (see ~/Dropbox/collab/otn/fred/r/fn/sentinel.r)
 
     ## simulate detections given receiver locations & simulated transmission along track
-      recLocs <- recLocs %>%
-        mutate(x = x * 1000, y = y * 1000)
+    recLocs <- recLocs %>%
+      mutate(x = x * 1000, y = y * 1000)
 
       if(!is.null(trans)) {
       detect <- trans %>%
-        pdet(trs = ., rec = recLocs[, c("id","locality","x","y","z")], b = b, noise = noise)
+        pdet(trs = ., rec = recLocs[, c("id","x","y","z")], b = b, noise = noise)
       } else {
         detect <- NULL
       }
@@ -102,5 +70,5 @@ sim_detect <-
         s$detect <- detect
       }
 
-    return(s)
+    return(as_tibble(s))
   }

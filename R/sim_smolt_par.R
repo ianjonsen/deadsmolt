@@ -34,10 +34,12 @@ sim_smolt_par <-
   function(temp = TRUE,
            advect = TRUE,
            growth = TRUE,
-           scenario = "sobi",
+           scenario = c("sobi", "mir"),
            land = FALSE,
            boundary = FALSE,
            ...) {
+
+    scenario <- match.arg(scenario)
 
     dots <- list(...)
 
@@ -48,20 +50,19 @@ sim_smolt_par <-
       coa = c(7120, 2350),
       tsr = c(4, 10), # C from Daniels et al. ASF sim modelling
       pN = 0.75,
-      rho = 0.4, # directional persistence for brw
-      ntries = 1,
-      psi = 0.9,
+      nu = 1, # strength of bias to CoA
+      r = 0.005, # scaling param for magnitude of rho as fn of dist from CoA
+      rho = 0.7, # directional persistence for crw
       uvm = 1, # magnitude of current vectors: if uvm < 1 current strength is down-scaled
       buffer = 5,
-      al = 0, # wiebull scale parameter for move steps; if 0 then move steps are fixed at b
-      bl = 2, # weibull scale parameter
+      bl = 2, # body-lengths / s
       fl0 = 0.146,
       g = 0.006, # growth in forklength as % per day (re-scaled to hourly in simulation)
       surv = 0.9936, ## daily survival rate
-      reten = 0.845^(1/60), ## daily V7/8 tag retention rate (in first ~ 60 d - Brundson et al 2019 ICES JMarSci 76:7)
-      Dreten = 60, ## number of days within which tags can be expulsed
+      reten = 0.845^(1/60),
+      Dreten = 60,
       pdrf = c(5, -0.02), # = p(0.5) @ 250 m  + < 0.01 @ 500 m   [c(4.865, -0.0139)  (~ consistent w HFX line V9 @ high power)]
-      beta = c(-2, -2) # potential fn params to keep smolts off land
+      beta = c(-7.5,-7.5) # potential fn params to keep kelts off land
     )
 
     ## overide default control pars
@@ -75,3 +76,4 @@ sim_smolt_par <-
          boundary = boundary,
          pars = pars)
   }
+
