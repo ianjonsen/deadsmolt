@@ -8,6 +8,7 @@
 #' @param config - path to config.R script containing file.paths for required & optional environmental layers (see Details)
 #' @param deadsmolt - logical; turns on Miramichi & SoBI receiver locations if TRUE
 #' @param esrf - logical; turns off receiver & ESRF polygons if FALSE
+#' @param scenario - either "mir" or "sobi"
 #' @importFrom raster raster stack brick projectRaster extract
 #' @importFrom sp coordinates<- proj4string<- CRS spTransform SpatialPointsDataFrame spsample
 #' @importFrom sf st_as_sf st_sample st_coordinates st_distance

@@ -12,6 +12,8 @@ sim_setup(config = config, deadsmolt = FALSE, esrf = TRUE, scenario = NULL)
 \item{deadsmolt}{- logical; turns on Miramichi & SoBI receiver locations if TRUE}
 
 \item{esrf}{- logical; turns off receiver & ESRF polygons if FALSE}
+
+\item{scenario}{- either "mir" or "sobi"}
 }
 \description{
 load required rasters, receiver locations

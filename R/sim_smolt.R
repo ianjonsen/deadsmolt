@@ -73,6 +73,7 @@ sim_smolt <-
         ts[i - 1] <-
           extract(data$ts[[yday(mpar$pars$start.dt + i * 3600)]],
                   rbind(xy[i - 1, 1:2])) - 273.15
+
         if (is.na(ts[i - 1])) {
           ## calc mean Temp within 2 km buffer of location @ time i-1
           ts[i - 1] <-
