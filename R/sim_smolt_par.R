@@ -51,7 +51,6 @@ sim_smolt_par <-
       tsr = c(4, 10), # C from Daniels et al. ASF sim modelling
       pN = 0.75,
       nu = 1, # strength of bias to CoA
-      r = 0.005, # scaling param for magnitude of rho as fn of dist from CoA
       rho = 0.7, # directional persistence for crw
       uvm = 1, # magnitude of current vectors: if uvm < 1 current strength is down-scaled
       buffer = 5,
@@ -59,6 +58,7 @@ sim_smolt_par <-
       fl0 = 0.146,
       g = 0.006, # growth in forklength as % per day (re-scaled to hourly in simulation)
       surv = 0.9936, ## daily survival rate
+      surv.par = c(-6, 57.6),  ## intercept & slope for survival ~ fork-length relationship
       reten = 0.845^(1/60),
       Dreten = 60,
       pdrf = c(5, -0.02), # = p(0.5) @ 250 m  + < 0.01 @ 500 m   [c(4.865, -0.0139)  (~ consistent w HFX line V9 @ high power)]

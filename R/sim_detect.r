@@ -26,7 +26,6 @@ sim_detect <-
 
     if(!exists("recLocs", data)) stop("no receiver locations present in data")
 
-    recLocs <- data$recLocs
     trans <- tmp.tr <- dt <- tmp.dt <- NULL
     b <- s$params$pars$pdrf
 
@@ -49,26 +48,32 @@ sim_detect <-
     ## in July 2009 & July 2010 (see ~/Dropbox/collab/otn/fred/r/fn/sentinel.r)
 
     ## simulate detections given receiver locations & simulated transmission along track
-    recLocs <- recLocs %>%
-      mutate(x = x * 1000, y = y * 1000)
 
-      if(!is.null(trans)) {
-      detect <- trans %>%
-        pdet(trs = ., rec = recLocs[, c("id","x","y","z")], b = b, noise = noise)
-      } else {
-        detect <- NULL
-      }
+    if(!is.null(trans)) {
+        recLocs <- data$recLocs %>%
+          mutate(x = x * 1000, y = y * 1000)
+        detect <- trans %>%
+          pdet(
+            trs = .,
+            rec = recLocs[, c("id", "x", "y", "z")],
+            b = b,
+            noise = noise
+          )
+
+    } else {
+      detect <- NULL
+    }
 
 #      s$trans <- trans %>%
 #        select(id, date, x, y) %>%
 #        arrange(date)
 
-      if(!is.null(detect)) {
+    if (!is.null(detect)) {
       s$detect <- detect %>%
         arrange(date, recv_id, trns_id)
-      } else {
-        s$detect <- detect
-      }
+    } else {
+      s$detect <- detect
+    }
 
     return(s)
   }

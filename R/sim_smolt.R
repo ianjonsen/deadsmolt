@@ -122,42 +122,51 @@ sim_smolt <-
       }
 
       ## Movement kernel
-      ds[i,] <- move_kernel_smolt2(data,
-                                 xy = xy[i-1,],
-                                 mpar = mpar,
-                                 s = s[i],
-                                 ts = ts[i-1],
-                                 i)
+      if(surv[i - 1] == 1) {
+        ds[i, ] <- move_kernel_smolt2(
+          data,
+          xy = xy[i - 1, ],
+          mpar = mpar,
+          s = s[i],
+          ts = ts[i - 1],
+          i
+        )
 
-      ### Current Advection
-      if (mpar$advect) {
-        ## determine envt'l forcing
-        ## determine advection due to current, convert from m/s to km/h
-        u[i] <- extract(data$u[[yday(mpar$pars$start.dt + i * 3600)]],
-                        rbind(xy[i - 1, 1:2]), method = "simple") * 3.6 * mpar$par$uvm
-        v[i] <- extract(data$v[[yday(mpar$pars$start.dt + i * 3600)]],
-                        rbind(xy[i - 1, 1:2]), method = "simple") * 3.6 * mpar$par$uvm
+        ### Current Advection
+        if (mpar$advect) {
+          ## determine envt'l forcing
+          ## determine advection due to current, convert from m/s to km/h
+          u[i] <-
+            extract(data$u[[yday(mpar$pars$start.dt + i * 3600)]],
+                    rbind(xy[i - 1, 1:2]), method = "simple") * 3.6 * mpar$par$uvm
+          v[i] <-
+            extract(data$v[[yday(mpar$pars$start.dt + i * 3600)]],
+                    rbind(xy[i - 1, 1:2]), method = "simple") * 3.6 * mpar$par$uvm
 
-        if (any(is.na(u[i]), is.na(v[i]))) {
+          if (any(is.na(u[i]), is.na(v[i]))) {
+            u[i] <- v[i] <- 0
+          }
+
+          ## smolt crosses into SoBI, turn of advection b/c it can overwhelm smolt swim speeds
+          ##    could also achieve this effect by speeding up smolts in SoBI...
+          if ((ds[i, 2]) > data$sobi.box[3]) {
+            u[i] <- v[i] <- 0
+          }
+
+        } else if (!mpar$advect) {
           u[i] <- v[i] <- 0
         }
 
-        ## smolt crosses into SoBI, turn of advection b/c it can overwhelm smolt swim speeds
-        ##    could also achieve this effect by speeding up smolts in SoBI...
-        if((ds[i,2]) > data$sobi.box[3]) {
-          u[i] <- v[i] <- 0
-        }
+        xy[i,] <- cbind(ds[i, 1] + u[i],
+                        ds[i, 2] + v[i],
+                        ds[i, 3])
 
-      } else if(!mpar$advect) {
-        u[i] <- v[i] <- 0
+        ## overwrite s[i] if set to 0 (outside of preferred temp range) in movement kernel
+        s[i] <- ds[i, 4]
+      } else if (surv[i-1] == 0) {
+        xy[i,] <- xy[i-1, ]
+        s[i] <- 0
       }
-
-      xy[i, ] <- cbind(ds[i, 1] + u[i],
-                       ds[i, 2] + v[i],
-                       ds[i, 3])
-
-      ## overwrite s[i] if set to 0 (outside of preferred temp range) in movement kernel
-      s[i] <- ds[i,4]
 
       if(!is.na(extract(data$land, rbind(xy[i, 1:2])))  & any(!is.na(xy[i,]))) {
         mpar$land <- TRUE
@@ -183,35 +192,58 @@ sim_smolt <-
       if(!is.na(mpar$pars$surv)) {
         switch(mpar$scenario,
                sobi = {
-                 # rescales daily survival to hourly time step
-                 surv[i] <- rbinom(1, 1, mpar$pars$surv ^ (1 / 24))
+                 # rescales daily survival to hourly time step as a logistic fn of current fork-length
+                 if(any(!is.null(mpar$pars$surv.par))) {
+                   if(surv[i-1] == 1) {
+                     surv[i] <- rbinom(1, 1, plogis(mpar$pars$surv.par[1] + fl[i] * mpar$pars$surv.par[2]) ^ (1 / 24))
+                   } else {
+                     surv[i] <- 0
+                   }
+                 } else {
+                   if(surv[i-1] == 1) {
+                     surv[i] <- rbinom(1, 1, mpar$pars$surv ^ (1 / 24))
+                   } else {
+                     surv[i] <- 0
+                   }
+                 }
                },
                mir = {
                  # rescales daily survival to 15 min time step - surv param is per 15-min
-                 surv[i] <- rbinom(1, 1, mpar$pars$surv)
+                 if(any(!is.null(mpar$pars$surv.par))) {
+                   if(surv[i-1] == 1) {
+                      surv[i] <- rbinom(1, 1, plogis(mpar$pars$surv.par[1] + fl[i] * mpar$pars$surv.par[2]))
+                   } else {
+                     surv[i] <- 0
+                   }
+                 } else {
+                   if(surv[i-1] == 1) {
+                    surv[i] <- rbinom(1, 1, mpar$pars$surv)
+                   } else {
+                     surv[i] <- 0
+                   }
+                 }
                })
-       if (surv[i] == 0) {
-          message("smolt is dead")
-          break
-        }
       }
 
       ## determine tag retention
       if(!is.na(mpar$pars$reten) & i <= mpar$pars$Dreten*24) {
         switch(mpar$scenario,
                sobi = {
-                 # rescales daily tag retention rate to hourly time step
-                 reten[i] <- rbinom(1, 1, mpar$pars$reten ^ (1 / 24))
+                 if(reten[i-1] == 1) {
+                  # rescales daily tag retention rate to hourly time step
+                  reten[i] <- rbinom(1, 1, mpar$pars$reten ^ (1 / 24))
+                 } else {
+                   reten[i] <- 0
+                 }
                },
                mir = {
-                 # rescales daily tag retention rate to 15 min time step
-                 reten[i] <- rbinom(1, 1, mpar$pars$reten ^ (1 / (24*4)))
+                 if(reten[i-1] == 1) {
+                  # rescales daily tag retention rate to 15 min time step
+                  reten[i] <- rbinom(1, 1, mpar$pars$reten ^ (1 / (24*4)))
+                 } else {
+                   reten[i] <- 0
+                 }
                })
-
-        if(reten[i] == 0) {
-          message("tag expulsion")
-          break
-        }
       } else if(!is.na(mpar$pars$reten) & i > mpar$pars$Dreten*24) {
         reten[i] <- 1
       }
